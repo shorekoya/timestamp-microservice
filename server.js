@@ -1,48 +1,48 @@
 const express = require("express");
-const app = express();
 const cors = require("cors");
 
-app.use(cors({ optionsSuccessStatus: 200 }));
+const app = express();
+app.use(cors());
 
 app.use(express.static("public"));
 
-// Root HTML
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/views/index.html");
+  res.sendFile(__dirname + "/index.html");
 });
 
-// Timestamp API
+// Core endpoint
 app.get("/api/:date?", (req, res) => {
-  let { date } = req.params;
+  let dateString = req.params.date;
 
-  // If no date is provided, use current time
-  if (!date) {
-    const now = new Date();
+  // If no date is provided
+  if (!dateString) {
+    const currentDate = new Date();
     return res.json({
-      unix: now.getTime(),
-      utc: now.toUTCString(),
+      unix: currentDate.getTime(),
+      utc: currentDate.toUTCString(),
     });
   }
 
-  // If date is a number (timestamp in ms)
-  if (!isNaN(date) && /^\d+$/.test(date)) {
-    date = parseInt(date);
+  // If date is a number (Unix timestamp)
+  if (!isNaN(dateString)) {
+    dateString = parseInt(dateString);
   }
 
-  const parsedDate = new Date(date);
+  const date = new Date(dateString);
 
-  if (parsedDate.toString() === "Invalid Date") {
+  // Check for invalid date
+  if (date.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
   res.json({
-    unix: parsedDate.getTime(),
-    utc: parsedDate.toUTCString(),
+    unix: date.getTime(),
+    utc: date.toUTCString(),
   });
 });
 
 // Listen
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log("App is listening on port " + port);
+  console.log(`App is listening on port ${port}`);
 });
